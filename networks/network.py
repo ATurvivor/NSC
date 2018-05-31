@@ -1,8 +1,6 @@
 import networkx as nx
 import numpy as np
 
-from scipy.optimize import fmin
-from copy import copy
 from cost_functions import *
 from extras import *
 
@@ -16,45 +14,26 @@ class Network(nx.DiGraph):
         :return:
         """
         nx.DiGraph.__init__(self)
-        self.add_nodes_from(nodes)
+        self.add_nodes_from(nodes, utility=0, value=0, infected=0)
         self.add_edges_from(edges)
-
-        self.security_profile = {}
-        self.attack_decision = {}
-
-        self.init_params()
-
-    def init_params(self):
-        """
-        Initialise parameters
-        :return:
-        """
-        self.init_security_profile()
-        self.init_attack_decision()
-        self.init_attributes()
-
-    def init_security_profile(self):
-        for n in self.nodes():
-            self.node[n]['security'] = 0
-            self.security_profile[n] = 0
-
-    def init_attack_decision(self):
-        self.attack_decision = {n : 0 for n in self.nodes()}
-
-    def init_attributes(self):
-        att = {n : {'value' : 1, 'utility' : 0, 'infected' : 0} for n in self.nodes()}
-        self.add_attributes(att)
+        self.security_profile = {n: 0 for n in self.nodes()}
+        self.attack_decision = {n: 0 for n in self.nodes()}
 
     def set_attack_decision(self, attack_decision):
-        self.attack_decision = attack_decision
-
-    def set_security_profile(self, security_investment):
         """
-        Set security investments for agents
-        :param security_investment: dictionary containing agent ids : security investment
+        Set attack decision
+        :param attack_decision: dictionary
         :return:
         """
-        for n, value in security_investment.items():
+        self.attack_decision = attack_decision
+
+    def set_security_profile(self, security_profile):
+        """
+        Set security investments
+        :param security_investments: dictionary containing agent ids : security investment
+        :return:
+        """
+        for n, value in security_profile.items():
             try:
                 self.node[n]['security'] = value
                 self.security_profile[n] = value
@@ -64,37 +43,18 @@ class Network(nx.DiGraph):
 
     def get_security_profile(self):
         """
-        Return security investment for multiple agents
-        :param profile: dictionary containing security profile (key : agent id, value : security investment)
+        Return security profile
         :return:
         """
-        for n in self.nodes():
-            self.security_profile[n] = self.node[n]['security']
-
+        self.security_profile = {n : self.node[n]['security'] for n in self.nodes()}
         return self.security_profile
 
     def reset_security_profile(self):
+        """
+        Reset security profile
+        :return:
+        """
         self.security_profile = dict.fromkeys(self.security_profile, 0)
-
-    def add_attribute(self, id, attribute, value):
-        """
-        Add an attribute to node id
-        :param id: agent id
-        :param attribute: attribute key
-        :param value: attribute value
-        :return:
-        """
-        self.node[id][attribute] = value
-
-    def add_attributes(self, attributes):
-        """
-        Add multiple attributes to nodes
-        :param attributes: dictionary of agent ids with value a tuple (attribute, value)
-        :return:
-        """
-        for n in attributes.keys():
-            for att,value in attributes[n].items():
-                self.add_attribute(n, att, value)
 
     def compute_network_effect(self, i):
         """
@@ -103,6 +63,7 @@ class Network(nx.DiGraph):
         :param i: Target node
         :return:
         """
+        # TODO check probability
         qi = self.node[i]['security']
         r_prob = 0
         for node in self.nodes():
@@ -114,17 +75,16 @@ class Network(nx.DiGraph):
 
     def compute_utility(self):
         """
-        Computes utility function for each agent
+        Computes utility for each agent
         :return:
         """
         for n in self.nodes():
-            qn = self.node[n]['security']
-            self.node[n]['utility'] = self.node[n]['value'] * (1 - self.compute_network_effect(n)) - default_cost(qn)
-
+            node = self.node[n]
+            node['utility'] = node['value'] * (1 - self.compute_network_effect(n)) - default_cost(node['security'])
 
     def compute_social_welfare(self):
         """
-
+        Computes social welfare
         :return:
         """
         return sum([self.node[i]['utility'] for i in self.nodes()])
@@ -134,8 +94,6 @@ class Network(nx.DiGraph):
         Computes Nash equilibrium
         :return:
         """
-        for n in self.nodes():
-            sec = copy(self.security_profile)
         return 0
 
     def compute_social_opt(self):
@@ -145,25 +103,30 @@ class Network(nx.DiGraph):
         """
         return 0
 
-    def compute_cost(self, id, function=default_cost):
+    def compute_cost(self, n, function=default_cost):
         """
         Computes cost of security investment of node id
         :param function: cost function
-        :param id: node id
+        :param n: node n
         :return: Returns cost
         """
-        return function(self.node[id]['security'])
+        return function(self.node[n]['security'])
 
     def expected_nbInfections(self):
+        """
+        Computes the expected number of infections
+        :return:
+        """
         n = self.number_of_nodes()
-        return 1.0 / n * sum(1 - np.asarray(self.security_profile.values())) # TODO : modify depending on attack strategy
+        # TODO : modify depending on attack strategy
+        return 1.0 / n * sum(1 - np.asarray(self.security_profile.values()))
 
     def get_transmission_network(self):
         """
         Returns corresponding transmission network
         :return:
         """
-        networkT = self.copy()
-        ids = [n for n in self.nodes() if self.node[n]['security'] == 1]
-        networkT.remove_nodes_from(ids)
-        return networkT
+        transmission_network = self.copy()
+        nodes = [n for n in self.nodes() if self.node[n]['security'] == 1]
+        transmission_network.remove_nodes_from(nodes)
+        return transmission_network

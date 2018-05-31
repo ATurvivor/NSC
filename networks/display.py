@@ -1,4 +1,4 @@
-from networks.generate_network import *
+from generate_network import *
 import pylab
 
 def display_graph(G):

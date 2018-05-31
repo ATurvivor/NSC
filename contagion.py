@@ -7,20 +7,18 @@ def attack(graph):
     :param graph:
     :return:
     """
-    id = random.choice(graph.nodes())
-    node = graph.node[id]
-    p = random.random()
+    indices = random.sample(graph.nodes(), 3)
+    nodes = [graph.node[n] for n in indices]
+    graph.add_nodes_from(nodes, infected=1) # initially infected nodes
 
-    if p < node['security']:
-        graph.add_attribute(id, 'infected', 1)
-        spread(node)
+    #p = random.random()
+    #if p < node['security']:
+    spread()
 
-def spread(node):
+
+def spread():
     """
-    Spreads infection from some infected node
-    :param node:
+    Spreads infection in network
     :return:
     """
-
-
     return 0
