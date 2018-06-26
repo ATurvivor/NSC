@@ -1,5 +1,5 @@
-from network import *
 from random import uniform
+from networks.network import *
 import itertools
 
 
@@ -18,24 +18,6 @@ def erdos_renyi_network(nodes, p):
         if rand < p:
             edges += [pair]
     return Network(nodes, edges)
-
-
-def random_graph_with_clustering():
-    """
-    Generate a random graph with clustering
-    :return:
-    """
-    # TODO complete
-    return 0
-
-
-def preferential_attachment_network():
-    """
-    Generate a PA graph
-    :return:
-    """
-    # TODO complete
-    return 0
 
 
 def star_graph():

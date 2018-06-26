@@ -1,8 +1,9 @@
 import networkx as nx
-import numpy as np
+import matplotlib.pyplot as plt
 
-from cost_functions import *
-from extras import *
+from ext.cost_functions import *
+from ext.extras import *
+
 
 
 class Network(nx.DiGraph):
@@ -14,64 +15,159 @@ class Network(nx.DiGraph):
         :return:
         """
         nx.DiGraph.__init__(self)
-        self.add_nodes_from(nodes, utility=0, value=0, infected=0)
-        self.add_edges_from(edges)
-        self.security_profile = {n: 0 for n in self.nodes()}
-        self.attack_decision = {n: 0 for n in self.nodes()}
+        self.add_nodes_from(nodes, node_color='#6EB8CF', utility=0, value=0, infected=0, state=0,\
+                            initial_infectious_time=1, infectious_time=1)
+        self.add_edges_from(edges, edge_color='black')
+        self.size = len(self.nodes())
+        self.relative_size = 0
 
-    def set_attack_decision(self, attack_decision):
+    def set_attack_decision(self, decision):
         """
-        Set attack decision
-        :param attack_decision: dictionary
+        Sets attack decision
+        :param decision:
         :return:
         """
-        self.attack_decision = attack_decision
-
-    def set_security_profile(self, security_profile):
-        """
-        Set security investments
-        :param security_investments: dictionary containing agent ids : security investment
-        :return:
-        """
-        for n, value in security_profile.items():
+        for n, value in decision.items():
             try:
-                self.node[n]['security'] = value
-                self.security_profile[n] = value
+                self.node[n]['decision'] = value
             except KeyError as error:
                 pass
-                print('KeyError : Agent with id #' + str(error) + ' does not exist.')
+                print('\tKeyError : Agent with id #' + str(error) + ' does not exist.')
+
+    def get_attack_decision(self):
+        """
+        Returns attack decision
+        :return: dictionary
+        """
+        return {n : self.node[n]['decision'] for n in self.nodes()}
+
+    def set_security_investments(self, security_inv):
+        """
+        Sets security investments
+        :param security_inv: dictionary containing agent ids : security investment
+        :return:
+        """
+        for n, value in security_inv.items():
+            try:
+                self.node[n]['security'] = value
+            except KeyError as error:
+                pass
+                print('\tKeyError : Agent with id #' + str(error) + ' does not exist.')
 
     def get_security_profile(self):
         """
-        Return security profile
-        :return:
+        Returns security profile
+        :return: dictionary
         """
-        self.security_profile = {n : self.node[n]['security'] for n in self.nodes()}
-        return self.security_profile
+        return {n : self.node[n]['security'] for n in self.nodes()}
 
-    def reset_security_profile(self):
+    def set_infectious_time(self, infectious):
         """
-        Reset security profile
+        Sets security investments
+        :param security_inv: dictionary containing agent ids : security investment
         :return:
         """
-        self.security_profile = dict.fromkeys(self.security_profile, 0)
+        for n, value in infectious.items():
+            try:
+                self.node[n]['infectious_time'] = value
+                self.node[n]['initial_infectious_time'] = value
+            except KeyError as error:
+                pass
+                print('\tKeyError : Agent with id #' + str(error) + ' does not exist.')
+
+    def get_infectious_time(self):
+        """
+        Returns security profile
+        :return: dictionary
+        """
+        return {n : self.node[n]['infectious_time'] for n in self.nodes()}
+
+    def set_rate_of_contact(self, rate):
+        """
+        Sets security investments
+        :param security_inv: dictionary containing agent ids : security investment
+        :return:
+        """
+        for (u,v), value in rate.items():
+            try:
+                self[u][v]['rate'] = value
+            except KeyError as error:
+                pass
+                print('\tKeyError : Edge (' + str(u) + ',' + str(v) + ') does not exist.')
+
+    def get_rate_of_contact(self):
+        """
+        Returns security profile
+        :return: dictionary
+        """
+        return {(u,v) : self[u][v]['rate'] for (u,v) in self.edges()}
+
+    def update_display(self):
+        """
+
+        :return:
+        """
+        colors = ['#6EB8CF', '#BF404A']
+        nodes = list(self.nodes())
+        while nodes:
+            u = nodes.pop(0)
+            u_inf = self.node[u]['infected']
+            self.node[u]['node_color'] = colors[u_inf]
+            for v in self[u]: # neighbors
+                v_inf = self.node[v]['infected']
+                if v in nodes:
+                    self.node[v]['node_color'] = colors[v_inf]
+                    nodes.remove(v)
+                self[u][v]['edge_color'] = colors[u_inf and v_inf]
+
+    def display(self):
+        """
+
+        :return:
+        """
+        self.update_display() # update
+
+        node_colors = [self.node[n]['node_color'] for n in self.nodes()]
+        edge_colors = [self[u][v]['edge_color'] for u,v in self.edges()]
+        labels = {n : n for n in self.nodes()}
+        pos = nx.layout.spring_layout(self)
+
+        nx.draw_networkx_nodes(self, pos, node_color=node_colors, edgecolors='black')
+        nx.draw_networkx_edges(self, pos, edge_color=edge_colors, arrowstyle='->', arrowsize=5, width=1)
+        nx.draw_networkx_labels(self,pos,labels=labels, font_size=8)
+
+        plt.plot()
+        plt.show()
+
+    def compute_externality(self, i, j):
+        """
+        Calculates externality of node i on j
+        :param i:
+        :return:
+        """
+        prob = 0
+        attack_decision = self.get_attack_decision()
+        for node in self.nodes():
+            paths = [p for p in nx.all_simple_paths(self, source=node, target=j) if i in p]
+            for path in paths:
+                    prob += attack_decision[i] * prod([(1 - self.node[k]['security']) for k in path[:-1]])
+        return (1 - self.node[i]['security']) * prob
 
     def compute_network_effect(self, i):
         """
-        Calculates probability of infection reaching agent i
+        Calculates probability of infection reaching agent i, i.e. network effect on i
         :param N: Network
-        :param i: Target node
+        :param i: node
         :return:
         """
-        # TODO check probability
-        qi = self.node[i]['security']
-        r_prob = 0
-        for node in self.nodes():
-            for path in nx.all_simple_paths(self, source=node, target=i):
-                source = path[0]
-                r_prob += self.attack_decision[source] * prod([(1 - self.node[j]['security']) for j in path[:-1]])
-
-        return (1 - qi) * r_prob
+        nodes = list(self.nodes())
+        nodes.remove(i)
+        if not nodes:
+            return 1 - self.node[i]['security']
+        else:
+            j = nodes[0]
+            new_network = self.reduce_graph(j)
+            return new_network.compute_network_effect(i) + self.compute_externality(j, i)
 
     def compute_utility(self):
         """
@@ -112,21 +208,38 @@ class Network(nx.DiGraph):
         """
         return function(self.node[n]['security'])
 
-    def expected_nbInfections(self):
+    def compute_final_size(self):
         """
-        Computes the expected number of infections
+        Computes final size of an outbreak
         :return:
         """
-        n = self.number_of_nodes()
-        # TODO : modify depending on attack strategy
-        return 1.0 / n * sum(1 - np.asarray(self.security_profile.values()))
+        return len([n for n in self.nodes() if self.node[n]['state'] == 2])
+
+    def compute_relative_size(self):
+        """
+        Computes relative final size of graph
+        :return:
+        """
+        return self.compute_final_size() / self.size
 
     def get_transmission_network(self):
         """
         Returns corresponding transmission network
         :return:
         """
+        # TODO : verify method
         transmission_network = self.copy()
         nodes = [n for n in self.nodes() if self.node[n]['security'] == 1]
         transmission_network.remove_nodes_from(nodes)
         return transmission_network
+
+    def reduce_graph(self, i):
+        """
+
+        :param i:
+        :return:
+        """
+        # TODO : fix function
+        new_network = self.copy()
+        new_network.remove_node(i)
+        return new_network
