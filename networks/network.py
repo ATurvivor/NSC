@@ -4,22 +4,57 @@ import matplotlib.pyplot as plt
 from ext.cost_functions import *
 from ext.extras import *
 
-
-
 class Network(nx.DiGraph):
-    def __init__(self, nodes, edges):
+    def __init__(self, nodes=None, edges=None):
         """
 
         :param nodes: list of indices of nodes
         :param edges: list of edges
         :return:
         """
-        nx.DiGraph.__init__(self)
-        self.add_nodes_from(nodes, node_color='#6EB8CF', utility=0, value=0, infected=0, state=0,\
-                            initial_infectious_time=1, infectious_time=1)
-        self.add_edges_from(edges, edge_color='black')
-        self.size = len(self.nodes())
+        super().__init__(self)
+        if nodes is not None and edges is not None:
+            self.add_nodes_from(nodes)
+            self.add_edges_from(edges)
+            self.size = len(self.nodes())
         self.relative_size = 0
+
+    @classmethod
+    def from_graph(cls, G):
+        """
+        Generates a network via a graph object from Networkx
+
+        :param G: graph object from networkx
+        :return:
+        """
+        return cls(list(G.nodes()), list(G.to_directed().edges()))
+
+    # @Override
+    def add_nodes_from(self, nodes, **kwargs):
+        """
+        Overrides add_nodes_from method in class networkx
+
+        :param nodes: iterable of nodes
+        :return:
+        """
+        if kwargs == {}:
+            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, value=0, infected=0, state=0,\
+                    initial_infectious_time=1, infectious_time=1)
+        else:
+            super().add_nodes_from(nodes, **kwargs)
+
+    # @Override
+    def add_edges_from(self, edges, **kwargs):
+        """
+        Overrides add_edges_from method in class networkx
+
+        :param edges: iterable of edges
+        :return:
+        """
+        if kwargs == {}:
+            super().add_edges_from(edges, edge_color='black')
+        else:
+            super().add_edges_from(edges, **kwargs)
 
     def set_attack_decision(self, decision):
         """

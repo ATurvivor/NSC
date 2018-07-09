@@ -1,4 +1,5 @@
 import random
+import networkx as nx
 from math import exp
 from networks.network import Network
 from ext import globals
@@ -80,9 +81,14 @@ def update_infectious_time(G, n):
         G.node[n]['state'] = 2  # recovered state
 
 if __name__ == '__main__':
-    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    edges = [(1, 2), (1, 6), (3, 2), (3, 4), (3, 8), (4, 7), (7, 8), (7, 9), (7, 10)]
-    security_investment = {1: 0.7, 2: 0.6, 3: 0.5, 4: 0.8, 5: 0.8, 6: 0.75, 7: 0.78, 8: 0.9, 9: 0.45, 10: 0.93}
-    N = Network(nodes, edges)
+    # nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # edges = [(1, 2), (1, 6), (3, 2), (3, 4), (3, 8), (4, 7), (7, 8), (7, 9), (7, 10)]
+    # security_investment = {1: 0.7, 2: 0.6, 3: 0.5, 4: 0.8, 5: 0.8, 6: 0.75, 7: 0.78, 8: 0.9, 9: 0.45, 10: 0.93}
+    # N = Network(nodes, edges)
+    # N.set_security_investments(security_investment)
+    # attack(N, nb_infections=1)
+    n,m = 100,2
+    N = Network.from_graph(nx.barabasi_albert_graph(n,m))
+    security_investment = {x : random.random() for x in range(n)}
     N.set_security_investments(security_investment)
     attack(N, nb_infections=1)
