@@ -39,8 +39,7 @@ class Network(nx.DiGraph):
         :return:
         """
         if kwargs == {}:
-            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, value=0, infected=0, state=0,\
-                    initial_infectious_time=1, infectious_time=1)
+            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0)
         else:
             super().add_nodes_from(nodes, **kwargs)
 
