@@ -5,11 +5,12 @@ from networks.network import Network
 from ext import globals
 
 
-def attack(G, nb_infections):
+def attack(G, nb_infections, model='SIR'):
     """
     Attacks random node
     :param G: Graph
     :param nb_infections: Number of initially nb_infections nodes
+    :param model: Propagation model
     :return:
     """
     globals.gInfected = True
@@ -17,11 +18,11 @@ def attack(G, nb_infections):
     print('Initially infected nodes :', infected_nodes)
     G.add_nodes_from(infected_nodes, infected=1, state=1)  # initially nb_infections nodes
     while globals.gInfected:
-        spread(G)
+        spread(G, model=model)
     G.display()
 
 
-def spread(G):
+def spread(G, model='SIR'):
     """
     Propagates information/infection in network
     :param G:
@@ -42,15 +43,21 @@ def spread(G):
                 if infect_node(G.node[v]['security']):
                     G.node[v]['infected'] = 1
                     G.node[v]['state'] = 1 # infectious state
-        update_infectious_time(G, u)
+        update_infectious_time(G, u, model=model)
+
+    # SIRS case : at the end of recovered state, cycle back to susceptible state
+    if model == 'SIRS':
+        recovered_state = [n for (n, state) in G.nodes(data='state') if state == 2] # in recovered state
+        for u in recovered_state:
+            update_recovered_time(G, u, model=model)
 
 
 def calculate_transmissibility(G,u,v):
     """
     Calculates transmissibility probability
-    :param G:
-    :param u:
-    :param v:
+    :param G: Graph
+    :param u: Node
+    :param v: Node
     :return:
     """
     return 1.0 / len(G)
@@ -60,7 +67,7 @@ def calculate_transmissibility(G,u,v):
 def infect_node(security_inv):
     """
     Returns True if node gets infected, False otherwise
-    :param probability:
+    :param security_inv:
     :return:
     """
     if random.uniform(0, 1) < security_inv:
@@ -68,17 +75,34 @@ def infect_node(security_inv):
     return 0
 
 
-def update_infectious_time(G, n):
+def update_infectious_time(G, n, model='SIR'):
     """
     Update infectious time and current state, if applicable
     :param G:
-    :param G:
+    :param n:
+    :param model:
     :return:
     """
     G.node[n]['infectious_time'] -= 1
     if G.node[n]['infectious_time'] == 0:  # if end of infectious state
         G.node[n]['infectious_time'] = G.node[n]['initial_infectious_time']
-        G.node[n]['state'] = 2  # recovered state
+        if model == 'SIR' or model == 'SIRS':
+            G.node[n]['state'] = 2  # recovered state
+        if model == 'SIS':
+            G.node[n]['state'] = 0 # susceptible state
+
+def update_recovered_time(G, n):
+    """
+
+    :param G:
+    :param n:
+    :return:
+    """
+    G.node[n]['recovered_time'] -= 1
+    if G.node[n]['recovered_time'] == 0:  # if end of infectious state
+        G.node[n]['recovered_time'] = G.node[n]['initial_recovered_time']
+        G.node[n]['state'] = 0 # susceptible state
+
 
 if __name__ == '__main__':
     # nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

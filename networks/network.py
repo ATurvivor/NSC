@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from ext.cost_functions import *
 from ext.extras import *
 
+
 class Network(nx.DiGraph):
     def __init__(self, nodes=None, edges=None):
         """
