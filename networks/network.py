@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import random 
+from ext import globals
 from ext.cost_functions import *
 from ext.extras import *
 
@@ -31,6 +32,24 @@ class Network(nx.DiGraph):
         return cls(list(G.nodes()), list(G.to_directed().edges()))
 
     # @Override
+    def add_node(self, node, **kwargs):
+        """
+        Overrides add_nodes_from method in class networkx
+
+        :param nodes: iterable of nodes
+        :return:
+        """
+        if kwargs == {}:
+            t = random.randint(globals.START_TIME, globals.STOP_TIME)
+            tRecovered = random.randint(globals.START_TIME, globals.STOP_TIME)
+            s = random.random()
+            super().add_node(node, node_color='#6EB8CF', utility=0, state=0, \
+                    initial_infectious_time=t, infectious_time=t, \
+                    recovered_time=tRecovered, security_inv=s, infected=0)
+        else:
+            super().add_node(node, **kwargs)
+
+    # @Override
     def add_nodes_from(self, nodes, **kwargs):
         """
         Overrides add_nodes_from method in class networkx
@@ -39,9 +58,28 @@ class Network(nx.DiGraph):
         :return:
         """
         if kwargs == {}:
-            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0)
+            t = random.randint(globals.START_TIME, globals.STOP_TIME)
+            tRecovered = random.randint(globals.START_TIME, globals.STOP_TIME)
+            s = random.random()
+            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0, \
+                    initial_infectious_time=t, infectious_time=t, \
+                    recovered_time=tRecovered, security_inv=s, infected=0)
         else:
             super().add_nodes_from(nodes, **kwargs)
+
+    # @Override
+    def add_edge(self, edge, **kwargs):
+        """
+        Overrides add_edge method in class networkx 
+
+        :param edges: edge single edge
+        :return:
+        """
+        if kwargs == {}:
+            r = random.random()
+            super().add_edge(edge, edge_color='black', rate=r)
+        else:
+            super().add_edge(edge, **kwargs)
 
     # @Override
     def add_edges_from(self, edges, **kwargs):
@@ -52,7 +90,8 @@ class Network(nx.DiGraph):
         :return:
         """
         if kwargs == {}:
-            super().add_edges_from(edges, edge_color='black')
+            r = random.random()
+            super().add_edges_from(edges, edge_color='black', rate=r)
         else:
             super().add_edges_from(edges, **kwargs)
 
