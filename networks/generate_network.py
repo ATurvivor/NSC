@@ -1,9 +1,8 @@
 import sys
-import networkx as nx
-import random
-from ext import globals
 from datetime import datetime
+
 from networks.network import *
+
 
 def generate_attributes_file(n, **kwargs):
     """
@@ -24,7 +23,7 @@ def generate_attributes_file(n, **kwargs):
         with open(fname,'w+') as fid:
             fid.write('id,initial_infectious_time,infectious_time,recovered_time,security_inv\n')
             for i in range(n):
-                t = random.randint(globals.START_TIME,globals.STOP_TIME)
+                t = random.randint(globals.START_TIME, globals.STOP_TIME)
                 tRecovered = random.randint()
                 fid.write('{},{},{}\n'.format(i,t,t))
 

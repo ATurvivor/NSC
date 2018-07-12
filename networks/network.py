@@ -1,9 +1,11 @@
-import networkx as nx
+import random
+
 import matplotlib.pyplot as plt
-import random 
-from ext import globals
+import networkx as nx
+
 from ext.cost_functions import *
 from ext.extras import *
+from properties import globals
 
 
 class Network(nx.DiGraph):
@@ -34,7 +36,7 @@ class Network(nx.DiGraph):
     # @Override
     def add_node(self, node, **kwargs):
         """
-        Overrides add_nodes_from method in class networkx
+        Overrides add_nodes method in class networkx
 
         :param nodes: iterable of nodes
         :return:
@@ -45,7 +47,8 @@ class Network(nx.DiGraph):
             s = random.random()
             super().add_node(node, node_color='#6EB8CF', utility=0, state=0, \
                     initial_infectious_time=t, infectious_time=t, \
-                    recovered_time=tRecovered, security=s, infected=0)
+                    initial_recovered_time=tRecovered, recovered_time=tRecovered,\
+                    security=s, infected=0)
         else:
             super().add_node(node, **kwargs)
 
@@ -59,10 +62,13 @@ class Network(nx.DiGraph):
         """
         if kwargs == {}:
             super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0, infected=0)
-            infect_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for i in nodes]))
-            security = dict(zip(nodes, [random.random() for i in nodes]))
-            nx.set_node_attributes(self, infect_time, 'initial_infectious_time')
-            nx.set_node_attributes(self, infect_time, 'infectious_time')
+            infectious_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
+            recovered_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
+            security = dict(zip(nodes, [random.random() for _ in nodes]))
+            nx.set_node_attributes(self, infectious_time, 'initial_infectious_time')
+            nx.set_node_attributes(self, infectious_time, 'infectious_time')
+            nx.set_node_attributes(self, recovered_time, 'initial_recovered_time')
+            nx.set_node_attributes(self, recovered_time, 'recovered_time')
             nx.set_node_attributes(self, security, 'security')
         else:
             super().add_nodes_from(nodes, **kwargs)
@@ -91,7 +97,7 @@ class Network(nx.DiGraph):
         """
         if kwargs == {}:
             super().add_edges_from(edges, edge_color='black')
-            rate = dict(zip(edges, [random.random() for i in edges]))
+            rate = dict(zip(edges, [random.random() for _ in edges]))
             nx.set_edge_attributes(self, rate, 'rate')
         else:
             super().add_edges_from(edges, **kwargs)
@@ -166,38 +172,39 @@ class Network(nx.DiGraph):
         for (u,v), value in rate.items():
             try:
                 self[u][v]['rate'] = value
-            except KeyError as error:
+            except KeyError:
                 pass
                 print('\tKeyError : Edge (' + str(u) + ',' + str(v) + ') does not exist.')
 
     def get_rate_of_contact(self):
         """
-        Returns security profile
+        Returns rates of contact
         :return: dictionary
         """
         return {(u,v) : self[u][v]['rate'] for (u,v) in self.edges()}
 
     def update_display(self):
         """
-
+        Updates graph
         :return:
         """
-        colors = ['#6EB8CF', '#BF404A']
+        node_colors = ['#6EB8CF', '#BF404A']
+        edge_colors = ['#000000', '#BF404A']
         nodes = list(self.nodes())
         while nodes:
             u = nodes.pop(0)
             u_inf = self.node[u]['infected']
-            self.node[u]['node_color'] = colors[u_inf]
+            self.node[u]['node_color'] = node_colors[u_inf]
             for v in self[u]: # neighbors
                 v_inf = self.node[v]['infected']
                 if v in nodes:
-                    self.node[v]['node_color'] = colors[v_inf]
+                    self.node[v]['node_color'] = node_colors[v_inf]
                     nodes.remove(v)
-                self[u][v]['edge_color'] = colors[u_inf and v_inf]
+                self[u][v]['edge_color'] = edge_colors[u_inf and v_inf]
 
     def display(self):
         """
-
+        Displays graph
         :return:
         """
         self.update_display() # update
@@ -288,7 +295,7 @@ class Network(nx.DiGraph):
         Computes final size of an outbreak
         :return:
         """
-        return len([n for n in self.nodes() if self.node[n]['state'] == 2])
+        return len([n for n in self.nodes() if self.node[n]['infected'] == 1])
 
     def compute_relative_size(self):
         """

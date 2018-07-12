@@ -1,22 +1,24 @@
 import random
 import networkx as nx
-from math import exp
+
 from networks.network import Network
-from ext import globals
+from properties import globals
+from math import exp
 
 
-def attack(G, nb_infections, model='SIR'):
+def attack(G, init_infections, model='SIR'):
     """
     Attacks random node
     :param G: Graph
-    :param nb_infections: Number of initially nb_infections nodes
+    :param init_infections: Number of initially init_infections nodes
     :param model: Propagation model
     :return:
     """
-    globals.gInfected = True
-    infected_nodes = random.sample(G.nodes(), nb_infections)
-    print('Initially infected nodes :', infected_nodes)
-    G.add_nodes_from(infected_nodes, infected=1, state=1)  # initially nb_infections nodes
+    infected_nodes = random.sample(G.nodes(), init_infections)
+    if globals.gDebug:
+        print('Initially infected nodes :', infected_nodes)
+    att = {n : {'infected' : 1, 'state' : 1} for n in infected_nodes}
+    nx.set_node_attributes(G, att)  # initially init_infections nodes
     while globals.gInfected:
         spread(G, model=model)
     G.display()
@@ -26,30 +28,36 @@ def spread(G, model='SIR'):
     """
     Propagates information/infection in network
     :param G:
+    :param model:
     :return:
     """
     infectious_state = [n for (n, state) in G.nodes(data='state') if state == 1] # get nodes in infectious state
-    print('Nodes in infectious state :', infectious_state)
+    recovered_state = [n for (n, state) in G.nodes(data='state') if state == 2] # get nodes in recovered state
+
+    #print('Nodes in infectious state :', [(n, G.nodes[n]['infectious_time']) for n in infectious_state])
+    if globals.gDebug:
+        print('Nodes in infectious state :', infectious_state)
+        #print('Nodes in recovered state :', recovered_state)
     if not infectious_state:
         print('No more nodes in infectious state. END.')
+        print('Final size of outbreak : ' + str(G.compute_final_size()) + ' / ' + str(len(G.nodes())) + ' nodes.')
         globals.gInfected = False
         return
 
-    for u in infectious_state: # for each currently infected node
+    # SIRS case : at the end of recovered state, cycle back to susceptible state
+    if model == 'SIRS':
+        for u in recovered_state:
+            update_recovered_time(G, u)
+
+    for u in infectious_state: # nodes in infectious state
         neighbors = [n for n in G[u] if G.node[n]['state'] == 0] # neighbors in susceptible state
         # print('neighbors ', neighbors)
         for v in neighbors:  # for each neighbor
-            if random.uniform(0, 1) < calculate_transmissibility(G,u,v):
+            if random.uniform(0, 1) < calculate_transmissibility(G, u, v):
                 if infect_node(G.node[v]['security']):
-                    G.node[v]['infected'] = 1
                     G.node[v]['state'] = 1 # infectious state
+                    G.node[v]['infected'] = 1
         update_infectious_time(G, u, model=model)
-
-    # SIRS case : at the end of recovered state, cycle back to susceptible state
-    if model == 'SIRS':
-        recovered_state = [n for (n, state) in G.nodes(data='state') if state == 2] # in recovered state
-        for u in recovered_state:
-            update_recovered_time(G, u, model=model)
 
 
 def calculate_transmissibility(G,u,v):
@@ -60,8 +68,8 @@ def calculate_transmissibility(G,u,v):
     :param v: Node
     :return:
     """
-    return 1.0 / len(G)
-    #return 1 - exp(G[u][v]['rate'], G.node[u]['infectious_time'])
+    #return 1.0 / len(G)
+    return 1 - exp(-G[u][v]['rate'] * G.node[u]['infectious_time'])
 
 
 def infect_node(security_inv):
@@ -71,8 +79,8 @@ def infect_node(security_inv):
     :return:
     """
     if random.uniform(0, 1) < security_inv:
-        return 1
-    return 0
+        return 0
+    return 1
 
 
 def update_infectious_time(G, n, model='SIR'):
@@ -86,10 +94,11 @@ def update_infectious_time(G, n, model='SIR'):
     G.node[n]['infectious_time'] -= 1
     if G.node[n]['infectious_time'] == 0:  # if end of infectious state
         G.node[n]['infectious_time'] = G.node[n]['initial_infectious_time']
-        if model == 'SIR' or model == 'SIRS':
-            G.node[n]['state'] = 2  # recovered state
         if model == 'SIS':
             G.node[n]['state'] = 0 # susceptible state
+        else:
+            G.node[n]['state'] = 2  # recovered state
+
 
 def update_recovered_time(G, n):
     """
@@ -115,5 +124,5 @@ if __name__ == '__main__':
     N = Network.from_graph(nx.barabasi_albert_graph(n,m))
     security_investment = {x : random.random() for x in range(n)}
     N.set_security_investments(security_investment)
-    attack(N, nb_infections=1)
     print(N.nodes(data=True))
+    attack(N, init_infections=1)
