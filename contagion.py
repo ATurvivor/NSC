@@ -116,3 +116,4 @@ if __name__ == '__main__':
     security_investment = {x : random.random() for x in range(n)}
     N.set_security_investments(security_investment)
     attack(N, nb_infections=1)
+    print(N.nodes(data=True))

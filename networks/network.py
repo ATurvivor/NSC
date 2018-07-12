@@ -45,7 +45,7 @@ class Network(nx.DiGraph):
             s = random.random()
             super().add_node(node, node_color='#6EB8CF', utility=0, state=0, \
                     initial_infectious_time=t, infectious_time=t, \
-                    recovered_time=tRecovered, security_inv=s, infected=0)
+                    recovered_time=tRecovered, security=s, infected=0)
         else:
             super().add_node(node, **kwargs)
 
@@ -58,12 +58,12 @@ class Network(nx.DiGraph):
         :return:
         """
         if kwargs == {}:
-            t = random.randint(globals.START_TIME, globals.STOP_TIME)
-            tRecovered = random.randint(globals.START_TIME, globals.STOP_TIME)
-            s = random.random()
-            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0, \
-                    initial_infectious_time=t, infectious_time=t, \
-                    recovered_time=tRecovered, security_inv=s, infected=0)
+            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0, infected=0)
+            infect_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for i in nodes]))
+            security = dict(zip(nodes, [random.random() for i in nodes]))
+            nx.set_node_attributes(self, infect_time, 'initial_infectious_time')
+            nx.set_node_attributes(self, infect_time, 'infectious_time')
+            nx.set_node_attributes(self, security, 'security')
         else:
             super().add_nodes_from(nodes, **kwargs)
 
@@ -90,8 +90,9 @@ class Network(nx.DiGraph):
         :return:
         """
         if kwargs == {}:
-            r = random.random()
-            super().add_edges_from(edges, edge_color='black', rate=r)
+            super().add_edges_from(edges, edge_color='black')
+            rate = dict(zip(edges, [random.random() for i in edges]))
+            nx.set_edge_attributes(self, rate, 'rate')
         else:
             super().add_edges_from(edges, **kwargs)
 
