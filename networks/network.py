@@ -53,25 +53,29 @@ class Network(nx.DiGraph):
             super().add_node(node, **kwargs)
 
     # @Override
-    def add_nodes_from(self, nodes, **kwargs):
+    def add_nodes_from(self, nodes, *, infectious_time=None, \
+            recovered_time=None, security=None, **kwargs):
         """
         Overrides add_nodes_from method in class networkx
 
         :param nodes: iterable of nodes
         :return:
         """
-        if kwargs == {}:
-            super().add_nodes_from(nodes, node_color='#6EB8CF', utility=0, state=0, infected=0)
+        defaults = {'node_color' : '#6EB8CF', 'utility' : 0, 'state' : 0, 'infected' : 0}
+        defaults.update(kwargs)
+        if infectious_time is None:
             infectious_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
+        if recovered_time is None:
             recovered_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
-            security = dict(zip(nodes, [random.random() for _ in nodes]))
-            nx.set_node_attributes(self, infectious_time, 'initial_infectious_time')
-            nx.set_node_attributes(self, infectious_time, 'infectious_time')
-            nx.set_node_attributes(self, recovered_time, 'initial_recovered_time')
-            nx.set_node_attributes(self, recovered_time, 'recovered_time')
-            nx.set_node_attributes(self, security, 'security')
-        else:
-            super().add_nodes_from(nodes, **kwargs)
+        if security is None:
+            security = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
+
+        super().add_nodes_from(nodes, **defaults)
+        nx.set_node_attributes(self, infectious_time, 'initial_infectious_time')
+        nx.set_node_attributes(self, infectious_time, 'infectious_time')
+        nx.set_node_attributes(self, recovered_time, 'initial_recovered_time')
+        nx.set_node_attributes(self, recovered_time, 'recovered_time')
+        nx.set_node_attributes(self, security, 'security')
 
     # @Override
     def add_edge(self, edge, **kwargs):
@@ -88,19 +92,20 @@ class Network(nx.DiGraph):
             super().add_edge(edge, **kwargs)
 
     # @Override
-    def add_edges_from(self, edges, **kwargs):
+    def add_edges_from(self, edges, *, rate=None, **kwargs):
         """
         Overrides add_edges_from method in class networkx
 
         :param edges: iterable of edges
         :return:
         """
-        if kwargs == {}:
-            super().add_edges_from(edges, edge_color='black')
+        defaults = {'edge_color' : 'black'}
+        defaults.update(kwargs)
+        if rate is None:
             rate = dict(zip(edges, [random.random() for _ in edges]))
-            nx.set_edge_attributes(self, rate, 'rate')
-        else:
-            super().add_edges_from(edges, **kwargs)
+
+        super().add_edges_from(edges, **defaults)
+        nx.set_edge_attributes(self, rate, 'rate')
 
     def set_attack_decision(self, decision):
         """
