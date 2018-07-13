@@ -34,23 +34,31 @@ class Network(nx.DiGraph):
         return cls(list(G.nodes()), list(G.to_directed().edges()))
 
     # @Override
-    def add_node(self, node, **kwargs):
+    def add_node(self, node, *, infectious_time=None, recovered_time=None, \
+            security=None, **kwargs):
         """
         Overrides add_nodes method in class networkx
 
         :param nodes: iterable of nodes
         :return:
         """
-        if kwargs == {}:
-            t = random.randint(globals.START_TIME, globals.STOP_TIME)
-            tRecovered = random.randint(globals.START_TIME, globals.STOP_TIME)
-            s = random.random()
-            super().add_node(node, node_color='#6EB8CF', utility=0, state=0, \
-                    initial_infectious_time=t, infectious_time=t, \
-                    initial_recovered_time=tRecovered, recovered_time=tRecovered,\
-                    security=s, infected=0)
-        else:
-            super().add_node(node, **kwargs)
+        defaults = {'node_color' : '#6EB8CF', 'utility' : 0, 'state' : 0, 'infected' : 0, \
+                'initial_infectious_time' : infectious_time, 'infectious_time' : infectious_time, \
+                'initial_recovered_time' : recovered_time, 'recovered_time' : recovered_time, \
+                'security' : security}
+        defaults.update(kwargs)
+        if infectious_time is None:
+            infectious_time = random.randint(globals.START_TIME, globals.STOP_TIME)
+            defaults['initial_infectious_time'] = infectious_time
+            defaults['infectious_time'] = infectious_time
+        if recovered_time is None:
+            recovered_time = random.randint(globals.START_TIME, globals.STOP_TIME)
+            defaults['initial_recovered_time'] = recovered_time
+            defaults['recovered_time'] = recovered_time
+        if security is None:
+            defaults['security'] = random.random()
+
+        super().add_node(node, **defaults) 
 
     # @Override
     def add_nodes_from(self, nodes, *, infectious_time=None, \
@@ -68,7 +76,7 @@ class Network(nx.DiGraph):
         if recovered_time is None:
             recovered_time = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
         if security is None:
-            security = dict(zip(nodes, [random.randint(globals.START_TIME, globals.STOP_TIME) for _ in nodes]))
+            security = dict(zip(nodes, [random.random() for _ in nodes]))
 
         super().add_nodes_from(nodes, **defaults)
         nx.set_node_attributes(self, infectious_time, 'initial_infectious_time')
@@ -78,18 +86,16 @@ class Network(nx.DiGraph):
         nx.set_node_attributes(self, security, 'security')
 
     # @Override
-    def add_edge(self, edge, **kwargs):
+    def add_edge(self, edge, *, rate=random.random(), **kwargs):
         """
         Overrides add_edge method in class networkx 
 
         :param edges: edge single edge
         :return:
         """
-        if kwargs == {}:
-            r = random.random()
-            super().add_edge(edge, edge_color='black', rate=r)
-        else:
-            super().add_edge(edge, **kwargs)
+        defaults = {'edge_color' : 'black', 'rate' : rate}
+        defaults.update(kwargs)
+        super().add_edge(edge, **defaults)
 
     # @Override
     def add_edges_from(self, edges, *, rate=None, **kwargs):
