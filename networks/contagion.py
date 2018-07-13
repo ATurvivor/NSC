@@ -21,7 +21,8 @@ def attack(G, init_infections, model='SIR'):
     nx.set_node_attributes(G, att)  # initially init_infections nodes
     while globals.gInfected:
         spread(G, model=model)
-    G.display()
+    if globals.disp_graph:
+        G.display()
 
 
 def spread(G, model='SIR'):

@@ -1,7 +1,13 @@
 from networks.network import *
+from networks.generate_network import *
 from networks.contagion import attack
 from properties.properties import *
 
+def print_nodes_in_graph(G):
+    for node,attr in N.nodes(data=True):
+        print('Node ID : {}'.format(node))
+        for k, v in attr.items():
+            print('\t{} : {}'.format(k,v))
 
 def network_effect():
     """
@@ -23,10 +29,12 @@ if __name__ == '__main__':
     properties = read_properties('properties/test.properties')
     set_properties(properties)
 
-    n,m = 5,2
-    N = Network.from_graph(nx.barabasi_albert_graph(n,m))
+    n,m = 25,10
+    ps = lambda : random.randint(0,m)
+    pt = lambda : random.randint(0,m)
+    N = Network.from_graph(random_graph_with_clustering(range(n), ps, pt))
     security_investment = {x : random.random() for x in range(n)}
     N.set_security_investments(security_investment)
     if globals.gDebug:
-        print(N.nodes(data=True))
-    attack(N, init_infections=1, model='SIRS')
+        print_nodes_in_graph(N)
+    attack(N, init_infections=1, model='SIR')

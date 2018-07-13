@@ -86,7 +86,7 @@ class Network(nx.DiGraph):
         nx.set_node_attributes(self, security, 'security')
 
     # @Override
-    def add_edge(self, edge, *, rate=random.random(), **kwargs):
+    def add_edge(self, edge, *, rate=None, **kwargs):
         """
         Overrides add_edge method in class networkx 
 
@@ -94,6 +94,8 @@ class Network(nx.DiGraph):
         :return:
         """
         defaults = {'edge_color' : 'black', 'rate' : rate}
+        if rate is None:
+            defaults['rate'] = random.random()
         defaults.update(kwargs)
         super().add_edge(edge, **defaults)
 

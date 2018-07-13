@@ -28,5 +28,6 @@ def set_properties(properties):
     """
     globals.gInfected = eval(properties['gInfected'])
     globals.gDebug = eval(properties['gDebug'])
+    globals.disp_graph = eval(properties['disp_graph'])
     globals.START_TIME = eval(properties['START_TIME'])
     globals.STOP_TIME = eval(properties['STOP_TIME'])

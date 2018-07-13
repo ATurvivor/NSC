@@ -1,8 +1,33 @@
 import sys
 from datetime import datetime
 
+from itertools import chain
 from networks.network import *
 
+def random_graph_with_clustering(nodes, ps, pt):
+    G = nx.empty_graph(nodes)
+    stubs, corners = [ps() for _ in nodes], [pt() for _ in nodes]
+
+    stubs[0] += sum(stubs) % 2
+    corners[0] += sum(corners) % 3
+
+    stubs = list(chain.from_iterable([n]*d for n, d in enumerate(stubs)))
+    corners = list(chain.from_iterable([n]*d for n, d in enumerate(corners)))
+
+    random.shuffle(stubs)
+    random.shuffle(corners)
+
+    n, t1, t2 = len(stubs)//2, len(corners)//3, 2*(len(corners)//3)
+    stubs1, stubs2 = stubs[:n], stubs[n:]
+    corners1, corners2, corners3 = corners[:t1], corners[t1:t2], corners[t2:]
+
+    G.add_edges_from(zip(stubs1, stubs2))
+    G.add_edges_from(zip(corners1, corners2))
+    G.add_edges_from(zip(corners1, corners3))
+
+    G.remove_edges_from(G.selfloop_edges())
+
+    return G
 
 def generate_attributes_file(n, **kwargs):
     """
