@@ -22,8 +22,9 @@ def random_graph_with_clustering(nodes, ps, pt):
     G.add_edge_list(zip(stubs1, stubs2))
     G.add_edge_list(zip(corners1, corners2))
     G.add_edge_list(zip(corners1, corners3))
-
     gt.remove_self_loops(G)
+
+    G._default_properties()
 
     return G
 

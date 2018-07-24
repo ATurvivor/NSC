@@ -2,13 +2,14 @@ import random
 import numpy as np
 import graph_tool.all as gt
 
+from math import exp
 from properties import globals
 
 class Network(gt.Graph):
-    def __init__(self, nodes=None, edges=None, defaults=True. model='SIR'):
+    def __init__(self, vertices=None, edges=None, defaults=True, model='SIR'):
         super().__init__(directed=False)
-        if nodes is not None and edges is not None:
-            self.add_vertex(nodes)
+        if vertices is not None and edges is not None:
+            self.add_vertex(vertices)
             self.add_edge_list(edges)
             if defaults:
                 self._default_properties()
@@ -22,7 +23,7 @@ class Network(gt.Graph):
         :param G: graph object
         :return:
         """
-        return cls(nodes=G.num_vertices(), edges=list(G.edges()))
+        return cls(vertices=G.num_vertices(), edges=list(G.edges()))
 
     def _default_properties(self):
         """ Initializes the default properties of the network simulation
@@ -40,6 +41,7 @@ class Network(gt.Graph):
         self.vp['utility'] = self.new_vp('int', val=0)
         self.vp['recovered'] = self.new_vp('bool', val=False)
         self.vp['infected'] = self.new_vp('bool', val=False)
+        self.vp['active'] = self.new_vp('bool', val=False)
         self.ep['rate'] = self.new_ep('double', vals=np.random.rand(m))
 
     def get_transmissibility(self, u, v):
@@ -56,17 +58,20 @@ class Network(gt.Graph):
         :param v: vertex object or vertex index
         :return: True if vertex was infected, False otherwise
         """
-        if random.random() > self.vertex_properties['security'][v]:
-            self.vertex_properties['infected'] = 1
-            self.vertex_properties['state'] = 1
-            return True
-        return False
+        if random.random() < self.vertex_properties['security'][v]:
+            return False
+        self.vp['infected'][v], self.vp['active'][v] = True, True
+        return True
 
     def update_infectious_time(self):
         """ Update infectious time and current state
         """
-        self.set_vertex_filter('infected')
+        self.set_vertex_filter(self.vp['infected'])
         self.vp['infectious_time'].ma -= 1
+        # Check of all nodes at the end of the infectious state
         mask = self.vp['infectious_time'].ma == 0
         self.vp['infectious_time'].ma[mask] = self.vp['initial_infectious_time'].ma[mask]
+        self.vp['active'].ma[mask] = False
         self.clear_filters()
+
+        return
