@@ -1,40 +1,66 @@
+import sys
+import graph_tool.all as gt
+import numpy as np
+
+from timeit import default_timer as timer
 from networks.network import *
 from networks.generate_network import *
 from networks.contagion import attack
 from properties.properties import *
 
-def print_nodes_in_graph(G):
-    for node,attr in N.nodes(data=True):
-        print('Node ID : {}'.format(node))
-        for k, v in attr.items():
-            print('\t{} : {}'.format(k,v))
-
-def network_effect():
-    """
-    Compute network effect
-    :return:
-    """
-    nodes = [1,2,3]
-    edges = [(1,2), (3,2)]
-    security_inv = {1 : 0.3, 2 : 0.2, 3 : 0.5}
-    attack_decision = {1 : 1.0/3, 2 : 1.0/3, 3 : 1.0/3}
-
-    N = Network(nodes, edges)
-    N.set_security_investments(security_inv)
-    N.set_attack_decision(attack_decision)
-
-    print('Network effect on node 2 : ' + str(N.compute_network_effect(2)))
-
-if __name__ == '__main__':
+def main(argv):
     properties = read_properties('properties/test.properties')
     set_properties(properties)
 
-    n,m = 25,10
-    ps = lambda : random.randint(0,m)
-    pt = lambda : random.randint(0,m)
-    N = Network.from_graph(random_graph_with_clustering(range(n), ps, pt))
-    security_investment = {x : random.random() for x in range(n)}
-    N.set_security_investments(security_investment)
-    if globals.gDebug:
-        print_nodes_in_graph(N)
-    attack(N, init_infections=1, model='SIR')
+    n, m = 100000, 2
+    ps = pt = lambda : random.randint(1,m)
+    output_size, bg_color = (1500, 1500), [1,1,1,1]
+
+    g = barabasi_albert_model(n, m)
+    attack(g, init_infections=1)
+    if globals.gDraw:
+        pos = gt.sfdp_layout(g)
+        gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], \
+                output='graph.png', bg_color=bg_color, output_size=output_size)
+
+    # print('Generating random graph with clustering...')
+    # start = timer()
+    # g = random_graph_with_clustering(n, ps, pt)
+    # end = timer()
+    # print('\tElasped time : {}\n\t{}'.format(end-start, g))
+    # if globals.gDraw:
+    #     deg = g.degree_property_map('in')
+    #     deg.a = 4 * (np.sqrt(deg.a) * 0.5 + 0.4)
+    #     pos = gt.sfdp_layout(g)
+    #     gt.graph_draw(g, #vertex_size=deg, vertex_fill_color=deg, vorder=deg,\
+    #             pos=pos, output_size=output_size, output='random_graph_with_clustering.png',\
+    #             bg_color=bg_color)
+
+    # print('Generating chung lu model')
+    # start = timer()
+    # g = chung_lu_model(n, ps)
+    # end = timer()
+    # print('\tElasped time : {}\n\t{}'.format(end-start, g))
+    # if globals.gDraw:
+    #     deg = g.degree_property_map('in')
+    #     deg.a = 4 * (np.sqrt(deg.a) * 0.5 + 0.4)
+    #     pos = gt.sfdp_layout(g)
+    #     gt.graph_draw(g, #vertex_size=deg, vertex_fill_color=deg, vorder=deg,\
+    #             pos=pos, output_size=output_size, output='chung_lu_model.png',\
+    #             bg_color=bg_color)
+
+    # print('Generating barbasi albert model')
+    # start = timer()
+    # g = barabasi_albert_model(n)
+    # end = timer()
+    # print('\tElasped time : {}\n\t{}'.format(end-start, g))
+    # if globals.gDraw:
+    #     deg = g.degree_property_map('in')
+    #     deg.a = 4 * (np.sqrt(deg.a) * 0.5 + 0.4)
+    #     pos = gt.sfdp_layout(g)
+    #     gt.graph_draw(g, #vertex_size=deg, vertex_fill_color=deg, vorder=deg,\
+    #             pos=pos, output_size=output_size, output='barabasi_albert_model.png',\
+    #             bg_color=bg_color)
+
+if __name__ == '__main__':
+    main(sys.argv)
