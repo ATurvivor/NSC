@@ -150,7 +150,7 @@ class Network(gt.Graph):
         Computes final size of an outbreak
         :return:
         """
-        self.set_vertex_filter(self.vp['infectious'])
+        self.set_vertex_filter(self.vp['recovered'])
         num_infected = self.num_vertices()
         self.clear_filters()
         return num_infected
@@ -161,3 +161,10 @@ class Network(gt.Graph):
         :return:
         """
         return self.compute_final_size() / self.num_vertices()
+
+    def expected_nb_infections(g):
+        """
+        Computes the expected number of infections in the network
+        :return:
+        """
+        return sum(self.vp['attack_decision'].a * (1 - self.vp['security'].a))
