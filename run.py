@@ -3,7 +3,7 @@ import graph_tool.all as gt
 import numpy as np
 
 from timeit import default_timer as timer
-from networks.network import *
+from networks.construct_network import *
 from networks.generate_network import *
 from networks.contagion import attack
 from properties.properties import *
@@ -12,16 +12,21 @@ def main(argv):
     properties = read_properties('properties/test.properties')
     set_properties(properties)
 
-    n, m = 100000, 2
+    n, m = 100, 2
     ps = pt = lambda : random.randint(1,m)
     output_size, bg_color = (1500, 1500), [1,1,1,1]
 
     g = barabasi_albert_model(n, m)
     attack(g, init_infections=1)
+    if globals.gDispGraph:
+        pos = gt.sfdp_layout(g)
+        gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], \
+                bg_color=bg_color)
+
     if globals.gDraw:
         pos = gt.sfdp_layout(g)
         gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], \
-                output='graph.png', bg_color=bg_color, output_size=output_size)
+                output='output/graph.png', bg_color=bg_color, output_size=output_size)
 
     # print('Generating random graph with clustering...')
     # start = timer()
@@ -62,5 +67,37 @@ def main(argv):
     #             pos=pos, output_size=output_size, output='barabasi_albert_model.png',\
     #             bg_color=bg_color)
 
+
+def network_effect_test():
+    properties = read_properties('properties/test.properties')
+    set_properties(properties)
+
+    n, m = 50, 2
+    #output_size, bg_color = (1500, 1500), [1,1,1,1]
+
+    #g = star_graph(n)
+    g = barabasi_albert_model(n, m)
+    print(g.compute_network_effect(g.vertex(0)))
+
+    #pos = gt.sfdp_layout(g)
+    #gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], bg_color=bg_color)
+
 if __name__ == '__main__':
-    main(sys.argv)
+    #main(sys.argv)
+    network_effect_test()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

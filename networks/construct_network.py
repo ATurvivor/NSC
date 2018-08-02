@@ -2,6 +2,7 @@ import random
 import numpy as np
 import graph_tool.all as gt
 
+from ext.tools import *
 from math import exp
 from properties import globals
 
@@ -20,10 +21,12 @@ class Network(gt.Graph):
         self.vp['infectious'] = self.new_vp('bool')
         self.vp['susceptible'] = self.new_vp('bool')
         self.vp['attack_decision'] = self.new_vp('double')
+        self.vp['hide'] = self.new_vp('bool') # for network effect calculation
         self.ep['rate'] = self.new_ep('double')
-        if vertices is not None and edges is not None:
+        if vertices is not None:
             self.add_vertex(vertices)
-            self.add_edge_list(edges)
+            if edges is not None:
+                self.add_edge_list(edges)
             if defaults:
                 self._default_properties()
 
@@ -56,6 +59,7 @@ class Network(gt.Graph):
         self.vp['infectious'].a = False
         self.vp['susceptible'].a = True
         self.vp['attack_decision'].a = 1/n
+        self.vp['hide'].a = False
         self.ep['rate'].a = np.random.rand(m)
 
     def get_transmissibility(self, u, v):
@@ -125,8 +129,33 @@ class Network(gt.Graph):
         :return:
         """
         # TODO : Figure out how to calculate paths using graph_tools
+        Q_ij = 0
+        for v in self.vertices():
+            for path in gt.all_paths(self, v, i):
+                if j in path:
+                    transmission = prod([(1 - self.vp['security'][k]) for k in path[1:]])
+                    Q_ij += self.vp['attack_decision'][v] * (1 - self.vp['security'][v]) * transmission
 
-        return
+        return (1 - self.vp['security'][j]) * Q_ij
+
+    def compute_infection_probability(self, i):
+        """
+
+        :return:
+        """
+        print(self.num_vertices())
+        if self.num_vertices() == 1:
+            return self.vp['attack_decision'][self.vertex(0)] * (1 - self.vp['security'][self.vertex(0)])
+
+        while True:
+            j = random.choice(self.get_vertices())
+            if j != i: break
+
+        externality = self.compute_externality(i,j)
+
+        self.vp['hide'][j] = True
+        self.set_vertex_filter(self.vp['hide'], inverted=True)
+        return self.compute_infection_probability(i) + externality
 
     def compute_network_effect(self, i):
         """
@@ -134,9 +163,9 @@ class Network(gt.Graph):
         :param i: vertex object or vertex index
         :return:
         """
-        # TODO : Calculate network effect without removing a node from the graph
-
-        return
+        network_effect = (1 - self.vp['security'][i]) * self.compute_infection_probability(i)
+        self.clear_filters()
+        return network_effect
 
     def compute_social_welfare(self):
         """
@@ -162,9 +191,17 @@ class Network(gt.Graph):
         """
         return self.compute_final_size() / self.num_vertices()
 
-    def expected_nb_infections(g):
+    def expected_nb_infections(self):
         """
         Computes the expected number of infections in the network
         :return:
         """
         return sum(self.vp['attack_decision'].a * (1 - self.vp['security'].a))
+
+
+
+
+
+
+
+

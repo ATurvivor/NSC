@@ -1,7 +1,7 @@
 import random
 import graph_tool.all as gt
 
-from networks.network import Network
+from networks.construct_network import Network
 from properties import globals
 
 def attack(g, init_infections):
@@ -15,12 +15,15 @@ def attack(g, init_infections):
     infectious_vertices = [g.vertex(idx) for idx in infect_idx]
     for vertex in infectious_vertices:
         g.vp['infectious'][vertex] = 1
+
     iteration = 0
     while globals.gInfected:
         if globals.gDebug:
             print('t = {} : '.format(iteration), end='')
         spread(g)
         iteration += 1
+
+    print('\nEnd of propagation.\n\n')
 
 def spread(g):
     """

@@ -1,6 +1,6 @@
 import graph_tool.all as gt
 from itertools import chain
-from networks.network import *
+from networks.construct_network import *
 
 def random_graph_with_clustering(nodes, ps, pt):
     G = Network(nodes)
@@ -35,3 +35,14 @@ def chung_lu_model(nodes, degree_seq):
 def barabasi_albert_model(nodes, m=1):
     G = gt.price_network(nodes, m=m, directed=False)
     return Network.from_graph(G)
+
+def star_graph(nodes):
+    """
+    Returns a star graph
+    :param nodes: Number of nodes
+    :return:
+    """
+    G = Network(nodes)
+    source = G.vertex(0)
+    G.add_edge_list([(source, i) for i in G.vertices() if i != source])
+    return G
