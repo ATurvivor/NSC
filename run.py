@@ -72,12 +72,15 @@ def network_effect_test():
     properties = read_properties('properties/test.properties')
     set_properties(properties)
 
-    n, m = 50, 2
+    n, m = 15, 2
     #output_size, bg_color = (1500, 1500), [1,1,1,1]
 
     #g = star_graph(n)
+    start = timer()
     g = barabasi_albert_model(n, m)
-    print(g.compute_network_effect(g.vertex(0)))
+    val, val2 = g.compute_network_effect(g.vertex(1)), g.compute_network_effect(g.vertex(1))
+    elapsed = timer() - start
+    print('Elapsed Time : {}\nValues : {}, {}'.format(elapsed, val, val2))
 
     #pos = gt.sfdp_layout(g)
     #gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], bg_color=bg_color)
@@ -85,19 +88,4 @@ def network_effect_test():
 if __name__ == '__main__':
     #main(sys.argv)
     network_effect_test()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

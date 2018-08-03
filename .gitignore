@@ -105,3 +105,6 @@ venv.bak/
 
 # attributes
 attributes/
+
+# test file
+test.py

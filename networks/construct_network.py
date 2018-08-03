@@ -11,6 +11,7 @@ class Network(gt.Graph):
         super().__init__(directed=False)
         # Setting up all properties of the graph
         self.gp['model'] = self.new_gp('string', val=model)
+        self.vp['id'] = self.new_vp('int')
         self.vp['infectious_time'] = self.new_vp('int')
         self.vp['initial_infectious_time'] = self.new_vp('int')
         self.vp['recovered_time'] = self.new_vp('int')
@@ -22,6 +23,7 @@ class Network(gt.Graph):
         self.vp['susceptible'] = self.new_vp('bool')
         self.vp['attack_decision'] = self.new_vp('double')
         self.vp['hide'] = self.new_vp('bool') # for network effect calculation
+        self.vp['layer'] = self.new_vp('int')
         self.ep['rate'] = self.new_ep('double')
         if vertices is not None:
             self.add_vertex(vertices)
@@ -49,6 +51,7 @@ class Network(gt.Graph):
         low, high, n, m = globals.START_TIME, globals.STOP_TIME, self.num_vertices(), self.num_edges()
         infect, recover = np.random.randint(low, high, n), np.random.randint(low, high, n)
 
+        self.vp['id'].a = list(range(self.num_vertices()))
         self.vp['infectious_time'].a = infect
         self.vp['initial_infectious_time'].a = infect
         self.vp['recovered_time'].a = recover
@@ -60,6 +63,7 @@ class Network(gt.Graph):
         self.vp['susceptible'].a = True
         self.vp['attack_decision'].a = 1/n
         self.vp['hide'].a = False
+        self.vp['layer'].a = -1
         self.ep['rate'].a = np.random.rand(m)
 
     def get_transmissibility(self, u, v):
@@ -145,7 +149,7 @@ class Network(gt.Graph):
         """
         print(self.num_vertices())
         if self.num_vertices() == 1:
-            return self.vp['attack_decision'][self.vertex(0)] * (1 - self.vp['security'][self.vertex(0)])
+            return self.vp['attack_decision'][self.get_vertices()[0]]
 
         while True:
             j = random.choice(self.get_vertices())
@@ -164,6 +168,7 @@ class Network(gt.Graph):
         :return:
         """
         network_effect = (1 - self.vp['security'][i]) * self.compute_infection_probability(i)
+        self.vp['hide'].a = False
         self.clear_filters()
         return network_effect
 
@@ -197,11 +202,4 @@ class Network(gt.Graph):
         :return:
         """
         return sum(self.vp['attack_decision'].a * (1 - self.vp['security'].a))
-
-
-
-
-
-
-
 
