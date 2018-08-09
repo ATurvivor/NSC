@@ -33,14 +33,14 @@ class Network(gt.Graph):
                 self._default_properties()
 
     @classmethod
-    def from_graph(cls, G):
+    def from_graph(cls, G, defaults=defaults, model='SIR'):
         """
         Generates a network via a graph object from graph_tool
 
         :param G: graph object
         :return:
         """
-        return cls(vertices=G.num_vertices(), edges=list(G.edges()))
+        return cls(vertices=G.num_vertices(), edges=list(G.edges()), defaults=defaults, model=model)
 
     def _default_properties(self):
         """
