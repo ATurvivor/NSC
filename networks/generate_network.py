@@ -62,10 +62,8 @@ def star_graph(nodes, defaults=True, model='SIR'):
     :param nodes: Number of nodes
     :return:
     """
-    G = Network(nodes, defaults=defaults, model=model)
-    source = G.vertex(0)
-    G.add_edge_list([(source, i) for i in G.vertices() if i != source])
-    return G
+    edges = [(0, i ) for i in range(1, nodes)]
+    return Network(nodes, edges, defaults=defaults, model=model)
 
 def layer_graphs(g1, g2):
     """
