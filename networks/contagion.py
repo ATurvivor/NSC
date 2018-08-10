@@ -54,3 +54,21 @@ def spread(g):
         globals.gInfected = False
         if globals.gDebug:
             print('Total nodes recovered nodes : {}/{}'.format(g.compute_final_size(), g.num_vertices()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

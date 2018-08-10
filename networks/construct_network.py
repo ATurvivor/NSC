@@ -33,7 +33,7 @@ class Network(gt.Graph):
                 self._default_properties()
 
     @classmethod
-    def from_graph(cls, G, defaults=defaults, model='SIR'):
+    def from_graph(cls, G, defaults=True, model='SIR'):
         """
         Generates a network via a graph object from graph_tool
 
@@ -118,7 +118,7 @@ class Network(gt.Graph):
         self.vp['recovered_time'].ma -= 1
         mask = self.vp['recovered_time'].ma == 0
         self.vp['recovered_time'].ma[mask] = self.vp['initial_recovered_time'].ma[mask]
-        self.vp['recovered'] = False
+        self.vp['recovered'].ma[mask] = False
         self.vp['susceptible'].ma[mask] = True
 
         self.clear_filters()
@@ -203,3 +203,10 @@ class Network(gt.Graph):
         """
         return sum(self.vp['attack_decision'].a * (1 - self.vp['security'].a))
 
+    def compute_centrality(self, display=False):
+        """
+
+        :param display:
+        :return:
+        """
+        return 0

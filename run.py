@@ -72,7 +72,7 @@ def network_effect_test():
     properties = read_properties('properties/test.properties')
     set_properties(properties)
 
-    n, m = 15, 2
+    n, m = 10, 2
     #output_size, bg_color = (1500, 1500), [1,1,1,1]
 
     #g = star_graph(n)
@@ -86,6 +86,21 @@ def network_effect_test():
     #gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], bg_color=bg_color)
 
 if __name__ == '__main__':
-    #main(sys.argv)
-    network_effect_test()
+    main(sys.argv)
+    #network_effect_test()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -71,7 +71,7 @@ def layer_graphs(g1, g2):
     :param g2: Second network
     :return g3: Layered network
     """
-    g1.vp['layer'].a = 1
+    g1.vp['layer'].a = 1 # TODO increment layer instead ?
     g2.vp['layer'].a = 2
     g1Size, g2Size = g1.num_vertices(), g2.num_vertices()
     g3 = gt.graph_union(g1, g2, internal_props=True)
