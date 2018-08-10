@@ -2,7 +2,7 @@ import graph_tool.all as gt
 from itertools import chain
 from networks.construct_network import *
 
-def random_graph_with_clustering(nodes, ps, pt):
+def random_graph_with_clustering(nodes, ps, pt, defaults=True, model='SIR'):
     """
     Generates a random graph with clustering based on Newman's model
     :param nodes: Number of vertices in the graph
@@ -30,36 +30,39 @@ def random_graph_with_clustering(nodes, ps, pt):
     G.add_edge_list(zip(corners1, corners2))
     G.add_edge_list(zip(corners1, corners3))
     # gt.remove_self_loops(G)
-
-    G._default_properties()
+    
+    if defaults is True:
+        G._default_properties()
+    else:
+        G.gp['model'] = model
 
     return G
 
-def chung_lu_model(nodes, degree_seq):
+def chung_lu_model(nodes, degree_seq, defaults=True, model='SIR'):
     """
     Generates a graph based on the chung lu model
     :param nodes: Number of vertices in the graph
     :param degree_seq: Function that takes in no arguments and samples from a distribution for degree sequence
     """
-    G = gt.random_graph(nodes, degree_seq, directed=False)
+    G = gt.random_graph(nodes, degree_seq, directed=False, defaults=defaults, model=model)
     return Network.from_graph(G)
 
-def barabasi_albert_model(nodes, m=1):
+def barabasi_albert_model(nodes, m=1, defaults=True, model='SIR'):
     """
     Generates a graph based on the barabasi albert model
     :param nodes: Number of vertices in the graph
     :param m: Initial seed for number of connections per iteration
     """
-    G = gt.price_network(nodes, m=m, directed=False)
+    G = gt.price_network(nodes, m=m, directed=False, defaults=defaults, model=model)
     return Network.from_graph(G)
 
-def star_graph(nodes):
+def star_graph(nodes, defaults=True, model='SIR'):
     """
-    Returns a star graph
+    Returns a star network object
     :param nodes: Number of nodes
     :return:
     """
-    G = Network(nodes)
+    G = Network(nodes, defaults=defaults, model=model)
     source = G.vertex(0)
     G.add_edge_list([(source, i) for i in G.vertices() if i != source])
     return G
