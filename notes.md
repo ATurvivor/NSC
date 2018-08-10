@@ -26,3 +26,9 @@ Parameters related to Edges
     * log function
     * attribute generator
 
+## TODO - August 6th
+
+    * check for stable/unstable states in different frameworks (SIR, SIRS, SIS)
+    * fix network effect computation
+    * solve social optimum problem
+    * plot final epidemic size depending on different parameters/models

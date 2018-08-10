@@ -44,8 +44,8 @@ def chung_lu_model(nodes, degree_seq, defaults=True, model='SIR'):
     :param nodes: Number of vertices in the graph
     :param degree_seq: Function that takes in no arguments and samples from a distribution for degree sequence
     """
-    G = gt.random_graph(nodes, degree_seq, directed=False, defaults=defaults, model=model)
-    return Network.from_graph(G)
+    G = gt.random_graph(nodes, degree_seq, directed=False)
+    return Network.from_graph(G, defaults=defaults, model=model)
 
 def barabasi_albert_model(nodes, m=1, defaults=True, model='SIR'):
     """
@@ -53,8 +53,8 @@ def barabasi_albert_model(nodes, m=1, defaults=True, model='SIR'):
     :param nodes: Number of vertices in the graph
     :param m: Initial seed for number of connections per iteration
     """
-    G = gt.price_network(nodes, m=m, directed=False, defaults=defaults, model=model)
-    return Network.from_graph(G)
+    G = gt.price_network(nodes, m=m, directed=False)
+    return Network.from_graph(G, defaults=defaults, model=model)
 
 def star_graph(nodes, defaults=True, model='SIR'):
     """

@@ -6,6 +6,10 @@ from ext.tools import *
 from math import exp
 from properties import globals
 
+S = [1, 1, 1, 1]            # White color
+I = [0, 0, 0, 1]            # Black color
+R = [0.5, 0.5, 0.5, 1.]     # Grey color
+
 class Network(gt.Graph):
     def __init__(self, vertices=None, edges=None, defaults=True, model='SIR'):
         super().__init__(directed=False)
@@ -18,6 +22,7 @@ class Network(gt.Graph):
         self.vp['initial_recovered_time'] = self.new_vp('int')
         self.vp['security'] = self.new_vp('double')
         self.vp['utility'] = self.new_vp('int')
+        self.vp['state'] = self.new_vp('vector<double>') # for animation
         self.vp['recovered'] = self.new_vp('bool')
         self.vp['infectious'] = self.new_vp('bool')
         self.vp['susceptible'] = self.new_vp('bool')
@@ -58,6 +63,7 @@ class Network(gt.Graph):
         self.vp['initial_recovered_time'].a = recover
         self.vp['security'].a = np.random.rand(n)
         self.vp['utility'].a = 0
+        self.vp['state'].set_value(S)
         self.vp['recovered'].a = False
         self.vp['infectious'].a = False
         self.vp['susceptible'].a = True
@@ -87,6 +93,7 @@ class Network(gt.Graph):
             return False
         self.vp['infectious'][v] = True
         self.vp['susceptible'][v] = False
+        self.vp['state'][v] = I
         return True
 
     def update_infectious_time(self):
@@ -102,6 +109,13 @@ class Network(gt.Graph):
         self.vp['infectious_time'].ma[mask] = self.vp['initial_infectious_time'].ma[mask]
         self.vp['infectious'].ma[mask] = False
         self.vp['recovered'].ma[mask] = True
+
+        newly_recovered = self.new_vp("bool")
+        newly_recovered.a = False
+        newly_recovered.ma[mask] = True
+
+        self.set_vertex_filter(newly_recovered)
+        self.vp['state'].set_value(R)
 
         self.clear_filters()
 
@@ -120,6 +134,13 @@ class Network(gt.Graph):
         self.vp['recovered_time'].ma[mask] = self.vp['initial_recovered_time'].ma[mask]
         self.vp['recovered'].ma[mask] = False
         self.vp['susceptible'].ma[mask] = True
+
+        newly_susceptible = self.new_vp("bool")
+        newly_susceptible.a = False
+        newly_susceptible.ma[mask] = True
+
+        self.set_vertex_filter(newly_susceptible)
+        self.vp['state'].set_value(S)
 
         self.clear_filters()
 

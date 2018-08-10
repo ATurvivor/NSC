@@ -28,7 +28,11 @@ def set_properties(properties):
     """
     globals.gInfected = eval(properties['gInfected'])
     globals.gDebug = eval(properties['gDebug'])
-    globals.gDispGraph = eval(properties['gDispGraph'])
     globals.START_TIME = eval(properties['START_TIME'])
     globals.STOP_TIME = eval(properties['STOP_TIME'])
     globals.gDraw = eval(properties['gDraw'])
+    globals.gDispGraph = eval(properties['gDispGraph'])
+
+    globals.gCount = eval(properties['gCount'])
+    globals.gMaxCount = eval(properties['gMaxCount'])
+    globals.gSaveImages = eval(properties['gSaveImages'])
