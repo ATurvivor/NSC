@@ -21,7 +21,7 @@ class Network(gt.Graph):
         self.vp['recovered_time'] = self.new_vp('int')
         self.vp['initial_recovered_time'] = self.new_vp('int')
         self.vp['security'] = self.new_vp('double')
-        self.vp['utility'] = self.new_vp('int')
+        self.vp['utility'] = self.new_vp('double')
         self.vp['state'] = self.new_vp('vector<double>') # for animation
         self.vp['recovered'] = self.new_vp('bool')
         self.vp['infectious'] = self.new_vp('bool')
@@ -80,7 +80,7 @@ class Network(gt.Graph):
         :param v: vertex object or vertex index
         """
         edge = self.edge(u, v)
-        return 1 - exp(-self.edge_properties['rate'][edge] * self.vertex_properties['infectious_time'][u])
+        return 1 - exp(-self.ep['rate'][edge] * self.vp['infectious_time'][u])
 
     def infect_vertex(self, v):
         """

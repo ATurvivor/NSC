@@ -1,7 +1,6 @@
 import random
 import graph_tool.all as gt
 
-from networks.construct_network import Network
 from properties import globals
 
 def attack(g, init_infections):
@@ -31,9 +30,6 @@ def spread(g):
     :param g: network to simulate on
     :return:
     """
-    if g.gp['model'] == 'SIRS':
-        g.update_recovered_time()
-
     infectious = False
     g.set_vertex_filter(g.vp['infectious'])
     infectious_vertices = g.vertices()
@@ -48,12 +44,16 @@ def spread(g):
                 continue
             if random.random() < g.get_transmissibility(v, u):
                 g.infect_vertex(u)
+
+    if g.gp['model'] == 'SIRS':
+        g.update_recovered_time()
     g.update_infectious_time()
 
     if not infectious:
         globals.gInfected = False
         if globals.gDebug:
             print('Total nodes recovered nodes : {}/{}'.format(g.compute_final_size(), g.num_vertices()))
+
 
 
 

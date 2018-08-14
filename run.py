@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 from networks.construct_network import *
 from networks.generate_network import *
 from networks.contagion import attack
+from networks.complex_contagions import complex_attack
 from properties.properties import *
 
 def main(argv):
@@ -85,8 +86,28 @@ def network_effect_test():
     #pos = gt.sfdp_layout(g)
     #gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], bg_color=bg_color)
 
+def complex():
+    properties = read_properties('properties/test.properties')
+    set_properties(properties)
+
+    n, m = 100, 2
+    output_size, bg_color = (1500, 1500), [1,1,1,1]
+
+    g = barabasi_albert_model(n, m)
+    complex_attack(g, threshold='absolute', value=2)
+    if globals.gDispGraph:
+        pos = gt.sfdp_layout(g)
+        gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], \
+                bg_color=bg_color)
+
+    if globals.gDraw:
+        pos = gt.sfdp_layout(g)
+        gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['recovered'], \
+                output='output/graph.png', bg_color=bg_color, output_size=output_size)
+
 if __name__ == '__main__':
-    main(sys.argv)
+    #main(sys.argv)
+    complex()
     #network_effect_test()
 
 
