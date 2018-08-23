@@ -1,11 +1,11 @@
-import random
-import numpy as np
 import graph_tool.all as gt
-
-from ext.tools import *
-from ext.threshold_functions import *
+import numpy as np
+import random
 from math import exp
-from properties import globals
+
+from ext import globals
+from ext.threshold_functions import sigmoid
+from ext.tools import prod
 
 S = [1, 1, 1, 1]            # White color
 I = [0, 0, 0, 1]            # Black color

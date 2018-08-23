@@ -1,7 +1,6 @@
 import random
-import graph_tool.all as gt
+from ext import globals
 
-from properties import globals
 
 def attack(g, init_infections):
     """
@@ -21,8 +20,8 @@ def attack(g, init_infections):
             print('t = {} : '.format(iteration), end='')
         spread(g)
         iteration += 1
-
-    print('\nEnd of propagation.\n\n')
+    if globals.gDebug:
+        print('\nEnd of propagation.\n\n')
 
 def spread(g):
     """

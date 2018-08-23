@@ -1,8 +1,7 @@
 import random
-import graph_tool.all as gt
+from ext import globals
+from ext.threshold_functions import sigmoid
 
-from properties import globals
-from ext.threshold_functions import *
 
 def complex_attack(g):
     """

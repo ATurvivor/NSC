@@ -1,4 +1,3 @@
-import graph_tool.all as gt
 from itertools import chain
 from networks.construct_network import *
 

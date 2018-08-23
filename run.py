@@ -1,24 +1,28 @@
-import sys
-import graph_tool.all as gt
-import numpy as np
-
 from timeit import default_timer as timer
-from networks.generate_network import *
+
+import sys
+
 from networks.contagion import attack
 from networks.complex_contagions import complex_attack
+from networks.generate_network import *
+from ext import globals
 from ext.animate import animate
-from properties.properties import *
+from ext.tools import read_properties, set_properties
+
 
 def main(argv):
     properties = read_properties('properties/default.properties')
     set_properties(properties)
 
-    n, m = 1000, 2
+    n, m = 500, 3
     ps = pt = lambda : random.randint(1,m)
     output_size, bg_color = (1500, 1500), [1,1,1,1]
 
     g = barabasi_albert_model(n, m)
-    attack(g, init_infections=1)
+    if globals.gAnimate:
+        animate(g, init_infections=1)
+    else:
+        attack(g, init_infections=1)
     if globals.gDispGraph:
         pos = gt.sfdp_layout(g)
         gt.graph_draw(g, pos=pos, vertex_fill_color=g.vp['state'], \
@@ -110,8 +114,8 @@ def complex():
                 output='output/graph.png', bg_color=bg_color, output_size=output_size)
 
 if __name__ == '__main__':
-    #main(sys.argv)
-    complex()
+    main(sys.argv)
+    #complex()
     #network_effect_test()
 
 

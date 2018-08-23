@@ -1,14 +1,9 @@
-from graph_tool.all import *
-from properties.properties import *
-from networks.generate_network import *
-from ext.threshold_functions import *
-
-import random
-from properties import globals
-
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
+
+from graph_tool.all import *
+from networks.generate_network import *
 
 S = [1, 1, 1, 1]            # White color
 I = [0, 0, 0, 1]            # Black color
