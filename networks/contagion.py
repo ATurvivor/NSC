@@ -5,7 +5,7 @@ from properties import globals
 
 def attack(g, init_infections):
     """
-    Attacks random vertex on g
+    Attacks random vertices on g
     :param g: network to simulate on
     :param init_infections: Number of initially infected vertices
     :return:

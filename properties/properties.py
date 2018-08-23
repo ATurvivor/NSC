@@ -26,13 +26,19 @@ def set_properties(properties):
     :param properties: properties dictionary
     :return:
     """
-    globals.gInfected = eval(properties['gInfected'])
-    globals.gDebug = eval(properties['gDebug'])
     globals.START_TIME = eval(properties['START_TIME'])
     globals.STOP_TIME = eval(properties['STOP_TIME'])
-    globals.gDraw = eval(properties['gDraw'])
-    globals.gDispGraph = eval(properties['gDispGraph'])
 
+    globals.gInfected = eval(properties['gInfected'])
+    globals.gDebug = eval(properties['gDebug'])
+    globals.gDispGraph = eval(properties['gDispGraph'])
+    globals.gDraw = eval(properties['gDraw'])
+    globals.gLog = eval(properties['gLog'])
+
+    globals.gComplex = eval(properties['gComplex'])
+
+    globals.gAnimate = eval(properties['gAnimate'])
+    globals.gSaveImages = eval(properties['gSaveImages'])
     globals.gCount = eval(properties['gCount'])
     globals.gMaxCount = eval(properties['gMaxCount'])
-    globals.gSaveImages = eval(properties['gSaveImages'])
+

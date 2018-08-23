@@ -3,6 +3,7 @@ import numpy as np
 import graph_tool.all as gt
 
 from ext.tools import *
+from ext.threshold_functions import *
 from math import exp
 from properties import globals
 
@@ -11,10 +12,11 @@ I = [0, 0, 0, 1]            # Black color
 R = [0.5, 0.5, 0.5, 1.]     # Grey color
 
 class Network(gt.Graph):
-    def __init__(self, vertices=None, edges=None, defaults=True, model='SIR'):
+    def __init__(self, vertices=None, edges=None, defaults=True, model='SIR', threshold='relative'):
         super().__init__(directed=False)
         # Setting up all properties of the graph
         self.gp['model'] = self.new_gp('string', val=model)
+        self.gp['threshold'] = self.new_gp('string', val=threshold)
         self.vp['id'] = self.new_vp('int')
         self.vp['infectious_time'] = self.new_vp('int')
         self.vp['initial_infectious_time'] = self.new_vp('int')
@@ -22,6 +24,7 @@ class Network(gt.Graph):
         self.vp['initial_recovered_time'] = self.new_vp('int')
         self.vp['security'] = self.new_vp('double')
         self.vp['utility'] = self.new_vp('double')
+        self.vp['threshold_value'] = self.new_vp('double') # complex contagion
         self.vp['state'] = self.new_vp('vector<double>') # for animation
         self.vp['recovered'] = self.new_vp('bool')
         self.vp['infectious'] = self.new_vp('bool')
@@ -38,14 +41,14 @@ class Network(gt.Graph):
                 self._default_properties()
 
     @classmethod
-    def from_graph(cls, G, defaults=True, model='SIR'):
+    def from_graph(cls, G, defaults=True, model='SIR', threshold='relative'):
         """
         Generates a network via a graph object from graph_tool
 
         :param G: graph object
         :return:
         """
-        return cls(vertices=G.num_vertices(), edges=list(G.edges()), defaults=defaults, model=model)
+        return cls(vertices=G.num_vertices(), edges=list(G.edges()), defaults=defaults, model=model, threshold=threshold)
 
     def _default_properties(self):
         """
@@ -56,6 +59,11 @@ class Network(gt.Graph):
         low, high, n, m = globals.START_TIME, globals.STOP_TIME, self.num_vertices(), self.num_edges()
         infect, recover = np.random.randint(low, high, n), np.random.randint(low, high, n)
 
+        if self.gp['threshold'] == 'absolute':
+            threshold_values = np.random.randint(0, n, n)
+        elif self.gp['threshold'] == 'relative' or self.gp['threshold'] == 'probabilistic':
+            threshold_values = np.random.random(n)
+
         self.vp['id'].a = list(range(self.num_vertices()))
         self.vp['infectious_time'].a = infect
         self.vp['initial_infectious_time'].a = infect
@@ -63,6 +71,7 @@ class Network(gt.Graph):
         self.vp['initial_recovered_time'].a = recover
         self.vp['security'].a = np.random.rand(n)
         self.vp['utility'].a = 0
+        self.vp['threshold_value'].a = threshold_values
         self.vp['state'].set_value(S)
         self.vp['recovered'].a = False
         self.vp['infectious'].a = False
@@ -82,15 +91,25 @@ class Network(gt.Graph):
         edge = self.edge(u, v)
         return 1 - exp(-self.ep['rate'][edge] * self.vp['infectious_time'][u])
 
-    def infect_vertex(self, v):
+    def infect_vertex(self, v, complex=False, f=sigmoid):
         """
         Attempts to infect vertex v
-
         :param v: vertex object or vertex index
         :return: True if vertex was infectious, False otherwise
         """
-        if random.random() < self.vertex_properties['security'][v]:
+        if complex:
+            neighbors = self.vertex(v).out_neighbors()
+            active_neighbors = [idx for idx in neighbors if self.vp['infectious'][idx]]
+
+            relative = self.gp['threshold'] == 'relative' and not len(active_neighbors) >= self.vp['threshold_value'][v]
+            absolute = self.gp['threshold'] == 'absolute' and not len(active_neighbors) / self.vertex(v).out_degree() >= self.vp['threshold_value'][v]
+            probabilistic = self.gp['threshold'] == 'probabilistic' and not random.random() > f(len(active_neighbors)/neighbors)
+
+            if relative or absolute or probabilistic:
+                return False
+        elif random.random() < self.vertex_properties['security'][v]:
             return False
+
         self.vp['infectious'][v] = True
         self.vp['susceptible'][v] = False
         self.vp['state'][v] = I
@@ -188,6 +207,7 @@ class Network(gt.Graph):
         :param i: vertex object or vertex index
         :return:
         """
+        # TODO fix network effect computation
         network_effect = (1 - self.vp['security'][i]) * self.compute_infection_probability(i)
         self.vp['hide'].a = False
         self.clear_filters()

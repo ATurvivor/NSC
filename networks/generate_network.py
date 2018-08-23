@@ -2,7 +2,7 @@ import graph_tool.all as gt
 from itertools import chain
 from networks.construct_network import *
 
-def random_graph_with_clustering(nodes, ps, pt, defaults=True, model='SIR'):
+def random_graph_with_clustering(nodes, ps, pt, defaults=True, model='SIR', threshold='relative'):
     """
     Generates a random graph with clustering based on Newman's model
     :param nodes: Number of vertices in the graph
@@ -35,35 +35,36 @@ def random_graph_with_clustering(nodes, ps, pt, defaults=True, model='SIR'):
         G._default_properties()
     else:
         G.gp['model'] = model
+        G.gp['threshold'] = threshold
 
     return G
 
-def chung_lu_model(nodes, degree_seq, defaults=True, model='SIR'):
+def chung_lu_model(nodes, degree_seq, defaults=True, model='SIR', threshold='relative'):
     """
     Generates a graph based on the chung lu model
     :param nodes: Number of vertices in the graph
     :param degree_seq: Function that takes in no arguments and samples from a distribution for degree sequence
     """
     G = gt.random_graph(nodes, degree_seq, directed=False)
-    return Network.from_graph(G, defaults=defaults, model=model)
+    return Network.from_graph(G, defaults=defaults, model=model, threshold=threshold)
 
-def barabasi_albert_model(nodes, m=1, defaults=True, model='SIR'):
+def barabasi_albert_model(nodes, m=1, defaults=True, model='SIR', threshold='relative'):
     """
     Generates a graph based on the barabasi albert model
     :param nodes: Number of vertices in the graph
     :param m: Initial seed for number of connections per iteration
     """
     G = gt.price_network(nodes, m=m, directed=False)
-    return Network.from_graph(G, defaults=defaults, model=model)
+    return Network.from_graph(G, defaults=defaults, model=model, threshold=threshold)
 
-def star_graph(nodes, defaults=True, model='SIR'):
+def star_graph(nodes, defaults=True, model='SIR', threshold='relative'):
     """
     Returns a star network object
     :param nodes: Number of nodes
     :return:
     """
-    edges = [(0, i ) for i in range(1, nodes)]
-    return Network(nodes, edges, defaults=defaults, model=model)
+    edges = [(0, i) for i in range(1, nodes)]
+    return Network(nodes, edges, defaults=defaults, model=model, threshold=threshold)
 
 def layer_graphs(g1, g2):
     """
