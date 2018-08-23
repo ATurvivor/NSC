@@ -15,10 +15,12 @@ def run():
     Run simulations
     :return:
     """
-    runs = 10
+    runs = 1
 
-    nb_nodes = [10, 100, 500, 1000, 5000, 10000]
-    opt = [1, 2, 3]
+    nb_nodes = [10, 100]
+    opt = [1,2]
+    #nb_nodes = [10, 100, 500, 1000, 5000, 10000]
+    #opt = [1, 2, 3]
     models = ['SIR']
     #models = ['SIR', 'SIRS', 'SIS']
     #threshold = ['absolute', 'relative', 'probabilistic']
@@ -48,6 +50,7 @@ def run():
                     size += g.compute_final_size()
 
                 av_size[m] += [size / runs]
+
                 # print('Chung-Lu Model\n##########\n')
                 # start = timer()
                 # g = chung_lu_model(n, ps, model=model)
@@ -60,7 +63,18 @@ def run():
                 # end = timer()
                 # print('Elapsed time : {}\n'.format(end-start))
 
-    plot_results(nb_nodes, av_size)
+    time = datetime.now()
+    fname = 'results/simpleContagion' + str(time.year) + str(time.month) + str(time.day) + '-' + \
+            str(time.hour) + 'h' + str(time.minute) + 'm' + str(time.second) + 's' + \
+            str(time.microsecond) + 'us.txt'
+
+    f = open(fname, 'w+')
+    f.write(str(av_size))
+    f.close()
+
+
+
+    #plot_results(nb_nodes, av_size)
 
 def plot_results(nodes, size):
     """
