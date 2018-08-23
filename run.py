@@ -11,10 +11,10 @@ from ext.tools import read_properties, set_properties
 
 
 def main(argv):
-    properties = read_properties('properties/default.properties')
+    properties = read_properties('properties/simple_contagion.properties')
     set_properties(properties)
 
-    n, m = 500, 3
+    n, m = 100, 2
     ps = pt = lambda : random.randint(1,m)
     output_size, bg_color = (1500, 1500), [1,1,1,1]
 

@@ -11,6 +11,7 @@ def attack(g, init_infections):
     """
     infect_idx = random.sample(range(g.num_vertices()), init_infections)
     infectious_vertices = [g.vertex(idx) for idx in infect_idx]
+    globals.gInfected = True
     for vertex in infectious_vertices:
         g.vp['infectious'][vertex] = 1
 

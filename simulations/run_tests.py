@@ -15,7 +15,7 @@ def run():
     Run simulations
     :return:
     """
-    runs = 1
+    runs = 10
 
     nb_nodes = [10, 100, 500, 1000, 5000, 10000]
     opt = [1, 2, 3]
@@ -45,10 +45,9 @@ def run():
                     attack(g, init_infections=1)
                     #end = timer()
                     #print('Elapsed time : {}\n'.format(end-start))
-
                     size += g.compute_final_size()
-                av_size[m] += [size / runs]
 
+                av_size[m] += [size / runs]
                 # print('Chung-Lu Model\n##########\n')
                 # start = timer()
                 # g = chung_lu_model(n, ps, model=model)
