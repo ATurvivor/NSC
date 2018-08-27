@@ -97,7 +97,7 @@ def complex():
     n, m = 1000, 1
     output_size, bg_color = (1500, 1500), [1,1,1,1]
 
-    g = barabasi_albert_model(n, m, model='SIRS', threshold=globals.gComplex)
+    g = barabasi_albert_model(n, m, model='SIR', threshold=globals.gComplex)
     if globals.gAnimate:
         animate(g, complex=True)
     else:
@@ -114,8 +114,8 @@ def complex():
                 output='output/graph.png', bg_color=bg_color, output_size=output_size)
 
 if __name__ == '__main__':
-    main(sys.argv)
-    #complex()
+    #main(sys.argv)
+    complex()
     #network_effect_test()
 
 

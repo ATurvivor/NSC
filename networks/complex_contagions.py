@@ -12,8 +12,9 @@ def complex_attack(g):
     seed = random.choice(range(g.num_vertices()))
     g.vp['infectious'][seed] = True
     seed_neighborhood = g.vertex(seed).out_neighbors()
-    for n in seed_neighborhood:
-        g.vp['infectious'][n] = True
+    globals.gInfected = True
+    for vertex in seed_neighborhood:
+        g.vp['infectious'][vertex] = True
 
     iteration = 0
     while globals.gInfected:
@@ -22,7 +23,8 @@ def complex_attack(g):
         complex_spread(g)
         iteration += 1
 
-    print('\nEnd of propagation.\n\n')
+    if globals.gDebug:
+        print('\nEnd of propagation.\n\n')
 
 
 def complex_spread(g, f=sigmoid):

@@ -60,7 +60,7 @@ class Network(gt.Graph):
         infect, recover = np.random.randint(low, high, n), np.random.randint(low, high, n)
 
         if self.gp['threshold'] == 'absolute':
-            threshold_values = np.random.randint(0, n, n)
+            threshold_values = np.random.randint(1, 5, n)
         elif self.gp['threshold'] == 'relative' or self.gp['threshold'] == 'probabilistic':
             threshold_values = np.random.random(n)
 
@@ -101,15 +101,17 @@ class Network(gt.Graph):
             neighbors = self.vertex(v).out_neighbors()
             active_neighbors = [idx for idx in neighbors if self.vp['infectious'][idx]]
 
-            relative = self.gp['threshold'] == 'relative' and not len(active_neighbors) >= self.vp['threshold_value'][v]
-            absolute = self.gp['threshold'] == 'absolute' and not len(active_neighbors) / self.vertex(v).out_degree() >= self.vp['threshold_value'][v]
-            probabilistic = self.gp['threshold'] == 'probabilistic' and not random.random() > f(len(active_neighbors)/neighbors)
-
-            if relative or absolute or probabilistic:
+            relative = (self.gp['threshold'] == 'relative' and len(active_neighbors) / self.vertex(v).out_degree() >= self.vp['threshold_value'][v])
+            absolute = (self.gp['threshold'] == 'absolute' and len(active_neighbors) >= self.vp['threshold_value'][v])
+            probabilistic = (self.gp['threshold'] == 'probabilistic' and random.random() >= f(len(active_neighbors)/neighbors))
+            if not (relative or absolute or probabilistic):
                 return False
         elif random.random() < self.vertex_properties['security'][v]:
             return False
 
+        print('Infecting vertex {}'.format(v), absolute)
+        print('Neighbors {}, active neighbors {} :'.format(neighbors, active_neighbors))
+        print('Active neighbors {} / threshold {}'.format(len(active_neighbors), self.vp['threshold_value'][v]))
         self.vp['infectious'][v] = True
         self.vp['susceptible'][v] = False
         self.vp['state'][v] = I
