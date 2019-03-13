@@ -73,32 +73,34 @@ def plot_results(directory):
 
     :return:
     """
+    plt.figure(num=None, figsize=(8, 15), dpi=80, facecolor='w', edgecolor='k')
     for fname in os.listdir(directory):
-        f = open(directory + fname, 'r')
-        average_size = eval(f.read())
-        nodes = [10, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
-        index = 1
-        for key in average_size.keys():
-            plt.subplot(3, 1, index)
-            graph_results = average_size[key]
+        if fname.endswith('.txt'):
+            f = open(directory + fname, 'r')
+            average_size = eval(f.read())
+            nodes = [10, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
+            index = 1
+            for key in average_size.keys():
+                plt.subplot(3, 1, index)
+                graph_results = average_size[key]
 
-            for m in graph_results.keys():
-                plt.plot(nodes, graph_results[m], label='m = {}'.format(m))
+                for m in graph_results.keys():
+                    plt.plot(nodes, graph_results[m], label='m = {}'.format(m))
 
-            plt.ylim(ymin=0)
-            plt.legend(loc='upper left')
-            plt.ylabel('Final epidemic size')
-            plt.title('{} Model'.format(key))
-            index += 1
+                plt.ylim(ymin=0)
+                plt.legend(loc='upper left')
+                plt.ylabel('Final epidemic size')
+                plt.title('{} Model'.format(key))
+                index += 1
 
-        plt.xlabel('Number of nodes')
-        plt.suptitle('Final epidemic size in terms of the number of nodes (SIR model)')
-        imgname = directory + str.replace(fname, 'txt', 'png')
-        plt.savefig(imgname)
+            plt.xlabel('Number of nodes')
+            plt.suptitle('Final epidemic size in terms of the number of nodes (SIR model)')
+            imgname = directory + str.replace(fname, 'txt', 'png')
+            plt.savefig(imgname)
 
 if __name__ == '__main__':
-    run()
-    #plot_results('results/')
+    #run()
+    plot_results('results/')
 
 
 
